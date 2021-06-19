@@ -16,12 +16,24 @@ class UsersController < ApplicationController
   # POST /users
   def create
     @user = User.new(user_params)
-
     if @user.save
-      render json: @user, status: :created, location: @user
+      @token = encode_token(user_id: @user.id)
+      render json: {
+        status: 201,
+        user: UserSerializer.new(@user),
+        jwt: @token
+      }, status: :created, location: @user
     else
-      render json: @user.errors, status: :unprocessable_entity
+      render json: {
+        status: 422,
+        errors: @user.errors.full_messages.join(", ")
+      }, status: :unprocessable_entity
     end
+    #if @user.save
+    #  render json: @user, status: :created, location: @user
+    #else
+    #  render json: @user.errors, status: :unprocessable_entity
+    #end
   end
 
   # PATCH/PUT /users/1
